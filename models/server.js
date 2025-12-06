@@ -7,11 +7,16 @@ class Server{
         this.app = express();
         this.port=process.env.PORT || 3000;
         this.middlewares();
+        this.routes();
     }
 
     middlewares(){
         this.app.use(cors());
         this.app.use(express.json());
+    }
+
+    routes(){
+        this.app.use(require('../routes/auth.route'))
     }
 
 
