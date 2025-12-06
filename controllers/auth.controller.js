@@ -1,6 +1,6 @@
 const {response,request} = require('express');
 const bcrypt = require('bcrypt');
-
+const {generateJWT} = require('../helpers/jwt')
 
 const { users } = require('../data/store/users');
 
@@ -49,8 +49,40 @@ const createUser = async (req = request, res = response) => {
   });
 };
 
+const login=async(req=request,res=response)=>{
+  const {email,password}=req.body
+  try{
+    //Validate if user exist
+    const user = users.find((u) => u.email === email);
+      if(!user){
+          return res.status(400).json({
+              msg:'User does not exist'
+          })
+      }
+      //Validate password
+      const validPassword = bcrypt.compareSync(password,user.password);
+      if(!validPassword){
+          return res.status(400).json({
+              msg:'Password is incorrect'
+          });
+      }
+      
+      const token = await generateJWT(user.id);
+
+      res.json({
+         user,
+         token
+      })
+  }catch(error){
+      console.log(error);
+      return res.status(500).json({
+          msg:'Server Error'
+      })
+  }
+}
+
 
 
 module.exports={
-    createUser
+    createUser,login
  }
