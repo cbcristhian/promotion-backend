@@ -1,6 +1,6 @@
 const { request, response } = require('express');
 const jwt = require('jsonwebtoken');
-
+const { users } = require('../data/store/users');
 
 
 const generateJWT = ( uid = '' ) => {
@@ -24,6 +24,41 @@ const generateJWT = ( uid = '' ) => {
     })
 }
 
+const validateJWT = async( req = request, res = response, next ) => {
+
+    const token = req.header('Authorization');
+
+    if ( !token ) {
+        return res.status(401).json({
+            msg: 'There is no token in request'
+        });
+    }
+
+    try {
+        
+        const { uid } = jwt.verify( token, process.env.SECRETPRIVATEKEY );
+
+        //Read from in-memory-data
+        const user = users.find((u) => u.id === uid);
+
+        if( !user ) {
+            return res.status(401).json({
+                msg: 'Invalid token-user does not exists'
+            })
+        }    
+        req.user = user;
+        next();
+
+    } catch (error) {
+
+        console.log(error);
+        res.status(400).json({
+            msg: 'Invalid token'
+        })
+    }
+
+}
+
 module.exports = {
-    generateJWT
+    generateJWT,validateJWT
 }

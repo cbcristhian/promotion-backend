@@ -69,7 +69,7 @@ const login=async(req=request,res=response)=>{
       
       const token = await generateJWT(user.id);
 
-      res.json({
+      res.status(200).json({
          user,
          token
       })
@@ -81,8 +81,16 @@ const login=async(req=request,res=response)=>{
   }
 }
 
+const checkStatus=async(req=request,res=response)=>{
+  const token = await generateJWT(req.user.id);
+  res.status(200).json({
+    user:req.user,
+    token
+  })
+}
+
 
 
 module.exports={
-    createUser,login
+    createUser,login,checkStatus
  }
