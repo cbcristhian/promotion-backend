@@ -26,7 +26,14 @@ const generateJWT = ( uid = '' ) => {
 
 const validateJWT = async( req = request, res = response, next ) => {
 
-    const token = req.header('Authorization');
+    const authHeader = req.header('Authorization');
+
+    if (!authHeader) {
+        return res.status(401).json({ msg: 'No token provided' });
+    }
+
+    // Extract the token by removing the "Bearer" 
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader;
 
     if ( !token ) {
         return res.status(401).json({
