@@ -18,6 +18,7 @@ class Server{
     routes(){
         this.app.use(require('../routes/auth.route'))
         this.app.use(require('../routes/resident.route'))
+        this.app.use(require('../routes/admin.route'))
     }
 
 
