@@ -48,6 +48,7 @@ const createResident=async(req=request,res=response)=>{
     name,
     email,
     passwordHash,
+    registeredForCurrentRaffle: false,
     role: 'RESIDENT',
     apartmentNumber
   };
@@ -76,7 +77,15 @@ const patchResident=(req=request,res=response)=>{
         message: 'User not found',
       });
     }
-    console.log('APARTMENT',req.body.apartmentNumber)
+
+    // Check if email already taken
+    const exists = users.find((u) => u.email === req.body.email);
+    if (exists) {
+      return res.status(409).json({
+        message: 'Email already exists in the system',
+      });
+    }
+
       // Check if apartmentNumber has an owner
     const apartmentAlreadyExist = users.find((u) => u.apartmentNumber === +req.body.apartmentNumber);
     if (apartmentAlreadyExist) {
