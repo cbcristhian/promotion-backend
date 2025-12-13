@@ -2,6 +2,7 @@
 const {response,request} = require('express');
 const bcrypt = require('bcrypt');
 const { users } = require('../data/store/users');
+const { raffleHistory } = require('../data/store/raffle-history');
 
 const getResidents=(req=request,res=response)=>{
     const residents = users
@@ -68,7 +69,7 @@ const createResident=async(req=request,res=response)=>{
   });
 }
 
-const patchResident=(req=request,res=response)=>{
+const putResident=(req=request,res=response)=>{
   const {id} =req.params
 
     const user = users.find((u) => u.id === id);
@@ -106,10 +107,55 @@ const patchResident=(req=request,res=response)=>{
         apartmentNumber: user.apartmentNumber
       }
     })
+}
 
+const residentRaffleHistory=(req=request,res=response)=>{
+  const residentId=req.user.id
+
+  // Validate resident
+  const resident = users.find(u => u.id === residentId && u.role === "RESIDENT");
+  if (!resident) {
+    return res.status(404).json({ message: "Resident not found" });
+  }
+
+  // Build history
+  const history = raffleHistory.map(raffle => {
+    const { executedAt, assignments, unassignedResidents } = raffle;
+
+    // Check if resident was assigned a spot in this raffle
+    const assignedEntry = assignments.find(a => a.residentId === residentId);
+
+    if (assignedEntry) {
+      return {
+        executedAt,
+        residentId,
+        name: resident.name,
+        apartmentNumber: resident.apartmentNumber,
+        parkingSpotId: assignedEntry.parkingSpotId
+      };
+    }
+
+    // Not assigned (Loser on raffle)
+    if (unassignedResidents.includes(residentId)) {
+      return {
+        executedAt,
+        residentId,
+        name: resident.name,
+        apartmentNumber: resident.apartmentNumber,
+        parkingSpotId: null
+      };
+    }
+
+    // Resident didn't participate in this raffle, skipping
+    return null;
+  })
+  .filter(entry => entry !== null)
+  .sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
+
+  return res.json(history);
 
 }
 
 module.exports={
-  getResidents,createResident,patchResident
+  getResidents,createResident,putResident,residentRaffleHistory
 }
