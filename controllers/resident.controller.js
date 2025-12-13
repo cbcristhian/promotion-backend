@@ -9,7 +9,7 @@ const getResidents=(req=request,res=response)=>{
     .filter((user) => user.role === 'RESIDENT')
     .map(({ password, passwordHash, ...safeUser }) => safeUser);
   
-    res.status(200).json({
+    return res.status(200).json({
       count: residents.length,
       residents,
     });
@@ -57,7 +57,7 @@ const createResident=async(req=request,res=response)=>{
   // Save to in-memory store
   users.push(user);
 
-  res.status(201).json({
+  return res.status(201).json({
     message: 'User created successfully',
     user: {
       id: user.id,
@@ -69,45 +69,61 @@ const createResident=async(req=request,res=response)=>{
   });
 }
 
-const putResident=(req=request,res=response)=>{
-  const {id} =req.params
+const patchResident = (req = request, res = response) => {
+  const { id } = req.params;
 
-    const user = users.find((u) => u.id === id);
-    if (!user) {
-      return res.status(409).json({
-        message: 'User not found',
-      });
-    }
+  const user = users.find((u) => u.id === id);
+  if (!user) {
+    return res.status(404).json({
+      message: 'User not found',
+    });
+  }
 
-    // Check if email already taken
-    const exists = users.find((u) => u.email === req.body.email);
-    if (exists) {
+  // Email validation (only if changed)
+  if (req.body.email && req.body.email !== user.email) {
+    const emailTaken = users.find(
+      (u) => u.email === req.body.email && u.id !== id
+    );
+
+    if (emailTaken) {
       return res.status(409).json({
         message: 'Email already exists in the system',
       });
     }
+  }
 
-      // Check if apartmentNumber has an owner
-    const apartmentAlreadyExist = users.find((u) => u.apartmentNumber === +req.body.apartmentNumber);
-    if (apartmentAlreadyExist) {
+    // Apartment validation (only if changed)
+    if (
+      req.body.apartmentNumber !== undefined &&
+      req.body.apartmentNumber !== user.apartmentNumber
+    ) {
+    const apartmentTaken = users.find(
+      (u) =>
+        u.apartmentNumber === +req.body.apartmentNumber &&
+        u.id !== id
+    );
+
+    if (apartmentTaken) {
       return res.status(409).json({
         message: 'Apartment number already with another resident',
       });
     }
+  }
 
-    Object.assign(user,req.body)
+  Object.assign(user, req.body);
 
-    res.status(200).json({
-      message:'User updated successfully',
-      user:{
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        apartmentNumber: user.apartmentNumber
-      }
-    })
-}
+  return res.status(200).json({
+    message: 'User updated successfully',
+    user:{
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      apartmentNumber: user.apartmentNumber,
+    },
+  });
+};
+
 
 const residentRaffleHistory=(req=request,res=response)=>{
   const residentId=req.user.id
@@ -151,11 +167,26 @@ const residentRaffleHistory=(req=request,res=response)=>{
   })
   .filter(entry => entry !== null)
   .sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
+  return res.json({
+    registeredForRaffle:resident.registeredForCurrentRaffle,
+    residentHistory:history});
 
-  return res.json(history);
+}
+
+const registerRaffle=(req=request,res=response)=>{
+  const residentId=req.user.id
+  // Validate resident
+  const resident = users.find(u => u.id === residentId && u.role === "RESIDENT");
+  if (!resident) {
+    return res.status(404).json({ message: "Resident not found" });
+  }
+  resident.registeredForCurrentRaffle=!resident.registeredForCurrentRaffle
+
+
+  return res.status(200).json(`Resident ${resident.name} status for raffle was changed.`)
 
 }
 
 module.exports={
-  getResidents,createResident,putResident,residentRaffleHistory
+  getResidents,createResident,patchResident,residentRaffleHistory, registerRaffle
 }
