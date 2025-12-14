@@ -34,3 +34,19 @@ jobs:
     - name: Push Docker image
       run: |
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/promotion-backend:latest
+
+  deploy-to-railway:
+    runs-on: ubuntu-latest
+    needs: build
+    container: ghcr.io/railwayapp/cli:latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Deploy to Railway
+      run: |
+        railway up \
+          --service=d9c7ab9c-6f83-4902-94fb-f34c3012c6b4 \
+          --environment=c50d03fa-6ef8-4372-8901-578d52ea1b97 || true
