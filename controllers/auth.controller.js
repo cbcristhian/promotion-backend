@@ -70,7 +70,12 @@ const login=async(req=request,res=response)=>{
       const token = await generateJWT(user.id);
 
       res.status(200).json({
-         user,
+         user:{
+          id:user.id,
+          name:user.name,
+          role:user.role,
+          email:user.email
+         },
          token
       })
   }catch(error){

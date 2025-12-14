@@ -187,6 +187,33 @@ const registerRaffle=(req=request,res=response)=>{
 
 }
 
+const deleteResident=(req=request,res=response)=>{
+  const { id } = req.params;
+
+  const index = users.findIndex((u) => u.id === id);
+
+  if (index === -1) {
+    return res.status(404).json({
+      message: 'User not found',
+    });
+  }
+
+  const deletedUser = users[index];
+
+  users.splice(index, 1);
+
+  return res.status(200).json({
+    message: `Resident ${deletedUser.email} deleted successfully`,
+    user: {
+      id: deletedUser.id,
+      name: deletedUser.name,
+      email: deletedUser.email,
+      apartmentNumber: deletedUser.apartmentNumber,
+    },
+  });
+
+}
+
 module.exports={
-  getResidents,createResident,patchResident,residentRaffleHistory, registerRaffle
+  getResidents,createResident,patchResident,residentRaffleHistory, registerRaffle,deleteResident
 }
