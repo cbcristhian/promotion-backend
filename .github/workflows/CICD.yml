@@ -48,6 +48,6 @@ jobs:
     - name: Deploy to Railway
       run: |
         railway up \
-          --project=1ef6e9f1-dd7c-4566-b75d-7f044938f43f \
+          -- --project=1ef6e9f1-dd7c-4566-b75d-7f044938f43f \
           --service=d9c7ab9c-6f83-4902-94fb-f34c3012c6b4 \
           --environment=c50d03fa-6ef8-4372-8901-578d52ea1b97
