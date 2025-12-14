@@ -33,7 +33,7 @@ const createResident=async(req=request,res=response)=>{
     });
   }
   // Check if apartmentNumber has an owner
-  const apartmentAlreadyExist = users.find((u) => u.apartmentNumber === apartmentNumber);
+  const apartmentAlreadyExist = users.find((u) => u.apartmentNumber === +apartmentNumber);
   if (apartmentAlreadyExist) {
     return res.status(409).json({
       message: 'Apartment number already with another resident',
