@@ -108,7 +108,7 @@ http://localhost:3000
 * No `.env` files are committed to the repository
 ---
 
-## CI/CD
+## Deployment Railway GHA
 
 This project uses GitHub Actions to build and publish a Docker image
 to Docker Hub on every push to `master`.
