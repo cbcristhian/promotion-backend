@@ -106,4 +106,15 @@ http://localhost:3000
 
 * Environment variables are read using `process.env`
 * No `.env` files are committed to the repository
+---
 
+## CI/CD
+
+This project uses GitHub Actions to build and publish a Docker image
+to Docker Hub on every push to `master`.
+
+Railway is configured to deploy the service from the Docker image.
+This follows an immutable artifact workflow where CI produces the image
+and the platform consumes it.
+
+Note: Railway Docker-image services do not support inbound deploy hooks.
