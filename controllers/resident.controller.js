@@ -48,7 +48,7 @@ const createResident=async(req=request,res=response)=>{
     id: crypto.randomUUID(),
     name,
     email,
-    passwordHash,
+    password:passwordHash,
     registeredForCurrentRaffle: false,
     role: 'RESIDENT',
     apartmentNumber
